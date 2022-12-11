@@ -20,8 +20,10 @@ class Promotion(models.Model):
 class Product(models.Model):
     # define the fields of this Class
     title = models.CharField(max_length=255)  # varchar(255)
+    slug = models.SlugField()
     description = models.TextField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)  # decimal(6,2)
+    unit_price = models.DecimalField(
+        max_digits=6, decimal_places=2)  # decimal(6,2)
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
 
@@ -49,6 +51,8 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True)
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
+
+    # If we want more control on our Database, we'd use the Meta class
 
 
 class Order(models.Model):
