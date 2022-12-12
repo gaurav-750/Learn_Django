@@ -4,8 +4,8 @@
     <h2>Myself {{name}}</h2>
 
     <ul>
-      {% for customer in customers %}
-      <li>{{customer.id}} {{customer.email}}</li>
+      {% for product in products %}
+      <li>{{product.id}} {{product.title}} {{product.unit_price}}</li>
       {% endfor %}
     </ul>
   </body>

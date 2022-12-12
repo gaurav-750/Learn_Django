@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q, F
 
 from store.models import Product, Customer, Collection, Order, OrderItem
 # Create your views here.
@@ -51,5 +52,33 @@ def sayHello(req):
     res = OrderItem.objects.filter(product__collection__id=3)
     # print(list(res))
 
-    # return HttpResponse("Hello World!")
-    return render(req, 'hello.html', {'name': "Gaurav", 'customers': list(queryset)})
+    #! Multiple Filters:
+    # Products : inventory < 10 and price < 20
+    # queryset = Product.objects.filter(inventory__lt=10, unit_price__lt=10)
+    # queryset = Product.objects.filter(
+    #     inventory__lt=10).filter(unit_price__lt=20)
+
+    # queryset = Product.objects.filter(
+    #     Q(inventory__lt=10) | Q(unit_price__lt=20))
+
+    # queryset = Product.objects.filter(inventory=F('unit_price'))
+
+    #! Sorting
+    # queryset = Product.objects.order_by('title')
+
+    #! Limiting:
+    # queryset = Product.objects.all()[0:5]
+
+    #! Selecting fields to query
+    queryset = Product.objects.values(
+        'id', 'title', 'unit_price', 'collection__title')
+
+    # ? Select products that have been ordered, sort them by title
+    queryset = Product.objects.filter(
+        id=F('orderitem__product_id')).distinct().order_by('title')
+
+    # OR
+    queryset = Product.objects.filter(id__in=OrderItem.objects.values('product_id').distinct()
+                                      ).order_by('title')
+
+    return render(req, 'hello.html', {'name': "Gaurav", 'products': list(queryset)})
