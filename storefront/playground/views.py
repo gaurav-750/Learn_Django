@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F
+from django.db.models import Q, F, Value, Func
+from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 
 from store.models import Product, Customer, Collection, Order, OrderItem
@@ -35,22 +36,22 @@ def sayHello(req):
 
     # ? EXERCISE:
     # Customers with .com accounts:
-    queryset = Customer.objects.filter(email__endswith='.com')
+    # queryset = Customer.objects.filter(email__endswith='.com')
 
     # Collections which dont have any featured product
-    collections = Collection.objects.filter(featured_product_id__isnull=True)
+    # collections = Collection.objects.filter(featured_product_id__isnull=True)
     # print(list(collections))
 
     # Product with inventory < 10
-    prods = Product.objects.filter(inventory__lt=10)
+    # prods = Product.objects.filter(inventory__lt=10)
     # print(list(prods))
 
     # Orders placed by customer with id -> 1
-    ordersBy1 = Order.objects.filter(customer_id=1)
+    # ordersBy1 = Order.objects.filter(customer_id=1)
     # print(list(ordersBy1))
 
     # Order items for product in collection 3
-    res = OrderItem.objects.filter(product__collection__id=3)
+    # res = OrderItem.objects.filter(product__collection__id=3)
     # print(list(res))
 
     #! Multiple Filters:
@@ -71,16 +72,16 @@ def sayHello(req):
     # queryset = Product.objects.all()[0:5]
 
     #! Selecting fields to query
-    queryset = Product.objects.values(
-        'id', 'title', 'unit_price', 'collection__title')
+    # queryset = Product.objects.values(
+    #     'id', 'title', 'unit_price', 'collection__title')
 
     # ? Select products that have been ordered, sort them by title
-    queryset = Product.objects.filter(
-        id=F('orderitem__product_id')).distinct().order_by('title')
+    # queryset = Product.objects.filter(
+    #     id=F('orderitem__product_id')).distinct().order_by('title')
 
     # OR
-    queryset = Product.objects.filter(id__in=OrderItem.objects.values('product_id').distinct()
-                                      ).order_by('title')
+    # queryset = Product.objects.filter(id__in=OrderItem.objects.values('product_id').distinct()
+    #   ).order_by('title')
 
     # *only()
     # queryset = Product.objects.only('id', 'title', 'unit_price')[0:5]
@@ -100,27 +101,41 @@ def sayHello(req):
     # print(list(queryset))
 
     #! Aggregation
-    res = Product.objects.filter(collection__id=3).aggregate(
-        count=Count('id'), min_price=Min('unit_price'))
+    # res = Product.objects.filter(collection__id=3).aggregate(
+    # count=Count('id'), min_price=Min('unit_price'))
 
     # ? EXERCISE:
     # How many orders do we have?
-    res = Order.objects.aggregate(Count('id'))
+    # res = Order.objects.aggregate(Count('id'))
 
     # How many units of product 1 have we sold?
-    res = OrderItem.objects.filter(
-        product_id=1).aggregate(units_sold=Sum('quantity'))
+    # res = OrderItem.objects.filter(
+    #     product_id=1).aggregate(units_sold=Sum('quantity'))
 
     # How many orders had customer 1 placed?
-    res = Order.objects.filter(customer_id=1).aggregate(
-        customer1_totalOrders=Count('id'))
+    # res = Order.objects.filter(customer_id=1).aggregate(
+    # customer1_totalOrders=Count('id'))
 
     # What is min, max and avg price of products in collection 3?
-    res = Product.objects.filter(collection_id=3).aggregate(
-        min_price=Min('unit_price'),
-        max_price=Max('unit_price'),
-        avg_price=Avg('unit_price')
+    # res = Product.objects.filter(collection_id=3).aggregate(
+    #     min_price=Min('unit_price'),
+    #     max_price=Max('unit_price'),
+    #     avg_price=Avg('unit_price')
+    # )
+    # print(res)
+
+    #! Annotate
+    # res = Customer.objects.annotate(isNew=Value(True))
+    # res = Customer.objects.annotate(new_id=F('id')+1)
+    # res = Customer.objects.annotate(total_customers=Value(
+    #     Customer.objects.aggregate(Count('id'))['id__count']))
+
+    #! DB Functions:
+    # res = Customer.objects.annotate(
+    #     fullName=Func(F('first_name'), Value(" "), F('last_name'), function='CONCAT'))
+    # OR
+    res = Customer.objects.annotate(
+        fullName=Concat('first_name', Value(' '), 'last_name')
     )
-    print(res)
 
     return render(req, 'hello.html', {'name': "Gaurav", 'result': res})
