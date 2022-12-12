@@ -33,6 +33,9 @@ class Product(models.Model):
     #! Many-Many rel:
     promotions = models.ManyToManyField(Promotion)
 
+    def __str__(self):
+        return str(self.id) + " " + self.title + " " + str(self.unit_price)
+
 
 class Customer(models.Model):
     MEMBERSHIP_BRONZE = 'B'
