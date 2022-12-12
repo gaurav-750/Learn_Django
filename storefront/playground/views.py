@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F
+from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 
 from store.models import Product, Customer, Collection, Order, OrderItem
 # Create your views here.
@@ -81,4 +82,45 @@ def sayHello(req):
     queryset = Product.objects.filter(id__in=OrderItem.objects.values('product_id').distinct()
                                       ).order_by('title')
 
-    return render(req, 'hello.html', {'name': "Gaurav", 'products': list(queryset)})
+    # *only()
+    # queryset = Product.objects.only('id', 'title', 'unit_price')[0:5]
+    # print(list(queryset))
+
+    # queryset = Product.objects.defer('description')[0:5]
+    # print(list(queryset))
+
+    #! Selecting related objects:
+    # queryset = Product.objects.select_related('collection').all()[0:5]
+
+    # queryset = Product.objects.prefetch_related(
+    #     'promotions').select_related('collection').all()
+
+    # queryset = Order.objects.select_related(
+    #     'customer').order_by('-placed_at')[:5]
+    # print(list(queryset))
+
+    #! Aggregation
+    res = Product.objects.filter(collection__id=3).aggregate(
+        count=Count('id'), min_price=Min('unit_price'))
+
+    # ? EXERCISE:
+    # How many orders do we have?
+    res = Order.objects.aggregate(Count('id'))
+
+    # How many units of product 1 have we sold?
+    res = OrderItem.objects.filter(
+        product_id=1).aggregate(units_sold=Sum('quantity'))
+
+    # How many orders had customer 1 placed?
+    res = Order.objects.filter(customer_id=1).aggregate(
+        customer1_totalOrders=Count('id'))
+
+    # What is min, max and avg price of products in collection 3?
+    res = Product.objects.filter(collection_id=3).aggregate(
+        min_price=Min('unit_price'),
+        max_price=Max('unit_price'),
+        avg_price=Avg('unit_price')
+    )
+    print(res)
+
+    return render(req, 'hello.html', {'name': "Gaurav", 'result': res})
