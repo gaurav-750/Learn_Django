@@ -12,6 +12,9 @@ class Collection(models.Model):
     def __str__(self) -> str:
         return self.title
 
+    class Meta:
+        ordering = ['title']
+
 
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
@@ -37,7 +40,11 @@ class Product(models.Model):
     promotions = models.ManyToManyField(Promotion)
 
     def __str__(self):
-        return str(self.id) + " " + self.title + " " + str(self.unit_price)
+        return str(self.id) + " " + self.title + ", $" + str(self.unit_price)
+
+    class Meta:
+        ordering = ['id']
+        # verbose_name = 'Product'
 
 
 class Customer(models.Model):
