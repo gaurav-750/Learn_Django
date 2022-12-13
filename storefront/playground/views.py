@@ -1,11 +1,15 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, connection
 from django.db.models import Q, F, Value, Func, ExpressionWrapper, DecimalField,  CharField
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
+from django.contrib.contenttypes.models import ContentType
 
-from store.models import Product, Customer, Collection, Order, OrderItem
+from store.models import Product, Customer, Collection, Order, OrderItem, Cart, CartItem
+from tags.models import TaggedItem
+
+from datetime import datetime
 # Create your views here.
 # * It take a req and returns a response
 # * Request Handler
@@ -180,10 +184,100 @@ def sayHello(req):
     # )
 
     # Top 5 best selling products and their total sales:
-    res = Product.objects.annotate(
-        total_sales=Sum(
-            F('orderitem__unit_price') *
-            F('orderitem__quantity')
-        )).order_by('-total_sales')[0:5]
+    # res = Product.objects.annotate(
+    #     total_sales=Sum(
+    #         F('orderitem__unit_price') *
+    #         F('orderitem__quantity')
+    #     )).order_by('-total_sales')[0:5]
 
-    return render(req, 'hello.html', {'name': "Gaurav", 'result': res})
+    #! Querying Generic Relationships:
+    # We need to find the tags for a particular product
+    # 1. Find the content_type_id from ContentType Table
+    # content_type = ContentType.objects.get_for_model(Product)
+
+    # queryset = TaggedItem.objects \
+    #     .select_related('tag') \
+    #     .filter(
+    #         content_type=content_type,
+    #         object_id=1
+    #     )
+
+    # queryset = Product.objects.all()
+    # queryset[0]
+    # list(queryset)
+
+    #! Creating objects -> Insert
+    # collection = Collection()
+    # collection.title = 'Video Games'
+    # # collection.featured_product_id = 1
+    # collection.featured_product = Product(pk=1)
+    # collection.save()
+
+    # Collection.objects.create(title='Sports', featured_product=Product(id=2))
+    # Collection.objects.create(title='Accessories', featured_product_id=10)
+
+    #! Updating objects
+    # coll = Collection(pk=11)
+    # print('coll:', coll)
+    # coll.title = 'Video Games'
+    # coll.featured_product = Product(pk=1)
+    # coll.save()
+    # * Its not the right way to update as it causes data loss
+
+    # coll = Collection.objects.get(pk=11)
+    # print('coll:', coll)
+    # coll.title = 'Games'
+    # coll.featured_product = None
+    # coll.save()
+
+    # todo (OR)
+    # Collection.objects.filter(pk=11).update(featured_product_id=None)
+
+    #! Deleting objects:
+    # Collection.objects.filter(pk__gt=10).delete()
+
+    # todo EXERCISE:
+    # Create a shopping cart with an item:
+    # cart = Cart()
+    # cart.created_at = datetime.now()
+    # cart.save()
+
+    # CartItem.objects.create(quantity=2, cart_id=1,
+    # product=Product.objects.get(pk=1))
+
+    # Update the quantity of an item in a shopping cart
+    # CartItem.objects.filter(pk=1).update(quantity=3)
+
+    # Remove a shopping cart with its items
+    # Cart.objects.filter(pk=1).delete()
+
+    #! Transactions
+    # with transaction.atomic():
+    #     new_order = Order()
+    #     new_order.customer_id = 1
+    #     new_order.id = 1001
+    #     new_order.save()
+
+    #     item = OrderItem()
+    #     item.order = new_order
+    #     item.product_id = 1
+    #     item.quantity = 10
+    #     item.unit_price = 20
+    #     item.save()
+
+    #! Raw SQL queries:
+    # queryset = Order.objects.raw(
+    #     "delete from store_order where id = 1004"
+    # )
+
+    # print('qs:', queryset)
+
+    with connection.cursor() as cursor:
+        res = cursor.execute(
+            "select * from store_collection limit 10")
+        print('res=', res)
+        records = cursor.fetchone()
+        print(records)
+        print(records[0])
+
+    return render(req, 'hello.html', {'name': "Gaurav", "result": res})

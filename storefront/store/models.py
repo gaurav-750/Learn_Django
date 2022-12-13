@@ -9,6 +9,9 @@ class Collection(models.Model):
     featured_product = models.ForeignKey(
         'Product', on_delete=models.SET_NULL, null=True, related_name='+')
 
+    def __str__(self) -> str:
+        return self.title
+
 
 class Promotion(models.Model):
     description = models.CharField(max_length=255)
