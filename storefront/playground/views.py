@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F, Value, Func
+from django.db.models import Q, F, Value, Func, ExpressionWrapper, DecimalField,  CharField
 from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Min, Max, Sum, Avg
 
@@ -134,8 +134,56 @@ def sayHello(req):
     # res = Customer.objects.annotate(
     #     fullName=Func(F('first_name'), Value(" "), F('last_name'), function='CONCAT'))
     # OR
-    res = Customer.objects.annotate(
-        fullName=Concat('first_name', Value(' '), 'last_name')
-    )
+    # res = Customer.objects.annotate(
+    # fullName=Concat('first_name', Value(' '), 'last_name')
+    # )
+
+    #! Grouping
+    # Find the total orders each Customer has placed:
+    # res = Customer.objects.annotate(
+    #     orders_count=Count('order')
+    # )
+
+    #! Working with complex expressions (somewhat)
+    # discount = ExpressionWrapper(
+    #     F('unit_price')*0.9, output_field=DecimalField())
+    # res = Product.objects.annotate(
+    #     discounted_price=discount).defer('description')
+
+    # res = Product.objects.annotate(
+    #     dis_price=ExpressionWrapper(
+    #         F('unit_price') * 0.70, output_field=DecimalField())
+    # )
+
+    # ? EXERCISE:
+    # Find customers along with their last order id:
+    # res = Customer.objects.annotate(
+    #     last_order_id=Max('order__id')
+    # )
+
+    # 'Collections' and their count of products
+    # res = Collection.objects.annotate(
+    # total_products=Count('product__collection_id')
+    # )
+
+    # Customers with > 5 orders:
+    # res = Customer.objects.annotate(
+    #     total_orders=Count('order__customer_id')
+    # ).filter(total_orders__gt=5)
+
+    # Customers and the total amount they've spent:
+    # res = Customer.objects.annotate(
+    #     amount_spent=Sum(
+    #         F('order__orderitem__quantity') *
+    #         F('order__orderitem__unit_price')
+    #     )
+    # )
+
+    # Top 5 best selling products and their total sales:
+    res = Product.objects.annotate(
+        total_sales=Sum(
+            F('orderitem__unit_price') *
+            F('orderitem__quantity')
+        )).order_by('-total_sales')[0:5]
 
     return render(req, 'hello.html', {'name': "Gaurav", 'result': res})
