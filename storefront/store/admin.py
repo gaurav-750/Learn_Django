@@ -31,6 +31,23 @@ class CollectionAdmin(admin.ModelAdmin):
         )
 
 
+# todo Add a Custom Filter for inventory status:
+class InventoryFilter(admin.SimpleListFilter):
+    title = 'inventory'
+    parameter_name = 'inventory'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('<10', 'Low')
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == '<10':
+            return queryset.filter(
+                inventory__lt=10
+            )
+
+
 class ProductAdmin(admin.ModelAdmin):
     # * This class defines how we want to view/edit our Products Page
     # this fields will be displayed on Product page
@@ -42,6 +59,9 @@ class ProductAdmin(admin.ModelAdmin):
 
     # 20 products will be displayed per page
     list_per_page = 20
+
+    # filter:
+    list_filter = ['collection', 'last_update', InventoryFilter]
 
     @admin.display(ordering='inventory')
     def inventory_status(self, product):
@@ -55,9 +75,10 @@ class ProductAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'membership', 'orders']
     list_per_page = 50
-
     list_editable = ['membership']
+
     ordering = ['first_name', 'last_name']
+    search_fields = ['first_name__istartswith', 'last_name__istartswith']
 
     def orders(self, customer):
         url = (
