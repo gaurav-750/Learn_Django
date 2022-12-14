@@ -1,5 +1,8 @@
 from django.db import models
 from datetime import datetime
+
+from django.core.validators import MinValueValidator
+
 # Create your models here.
 
 
@@ -27,9 +30,12 @@ class Product(models.Model):
     # define the fields of this Class
     title = models.CharField(max_length=255)  # varchar(255)
     slug = models.SlugField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     unit_price = models.DecimalField(
-        max_digits=6, decimal_places=2)  # decimal(6,2)
+        max_digits=6,
+        decimal_places=2,
+        validators=[MinValueValidator(1)]
+    )
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
 
@@ -37,7 +43,7 @@ class Product(models.Model):
     collection = models.ForeignKey("Collection", on_delete=models.PROTECT)
 
     #! Many-Many rel:
-    promotions = models.ManyToManyField(Promotion)
+    promotions = models.ManyToManyField(Promotion, blank=True)
 
     def __str__(self):
         return str(self.id) + " " + self.title + ", $" + str(self.unit_price)

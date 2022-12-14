@@ -30,6 +30,8 @@ class CollectionAdmin(admin.ModelAdmin):
             product_cnt=Count('product__collection_id')
         )
 
+    search_fields = ['title']
+
 
 # todo Add a Custom Filter for inventory status:
 class InventoryFilter(admin.SimpleListFilter):
@@ -65,6 +67,8 @@ class ProductAdmin(admin.ModelAdmin):
     # filter:
     list_filter = ['collection', 'last_update', InventoryFilter]
 
+    search_fields = ['title']
+
     @admin.display(ordering='inventory')
     def inventory_status(self, product):
         print('product:', product)
@@ -83,6 +87,14 @@ class ProductAdmin(admin.ModelAdmin):
             request,
             f"{updated_count} products were successfully updated!"
         )
+
+    # * -------------------------------------------------------------- *
+    # *Customizing the Form
+    prepopulated_fields = {
+        'slug': ['title']
+    }
+
+    autocomplete_fields = ['collection']
 
 
 class CustomerAdmin(admin.ModelAdmin):
@@ -105,11 +117,27 @@ class CustomerAdmin(admin.ModelAdmin):
         return format_html('<a href="{}"> {} </a>', url, 'Orders')
 
 
+# todo InlineModel:
+class OrderItemInline(admin.TabularInline):
+    model = models.OrderItem
+
+    autocomplete_fields = ['product']
+    min_num = 1
+    max_num = 10
+    extra = 0
+
+
 # todo EXERCISE - Set up the Orders page along with their Customers
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'payment_status', 'customer']
     ordering = ['id']
+
+    # *---------------------------------------*
+    # Customizing Form
+    autocomplete_fields = ['customer']
+
+    inlines = [OrderItemInline]
 
 
 admin.site.register(models.Product, ProductAdmin)
