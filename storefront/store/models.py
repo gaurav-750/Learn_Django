@@ -67,11 +67,14 @@ class Customer(models.Model):
 
     # If we want more control on our Database, we'd use the Meta class
 
+    def __str__(self) -> str:
+        return self.first_name + " " + self.last_name
+
 
 class Order(models.Model):
     STATUS_PENDING = 'P'
     STATUS_COMPLETED = 'C'
-    STATUS_FAILED = 'f'
+    STATUS_FAILED = 'F'
     STATUS = [
         (STATUS_PENDING, 'Pending'),
         (STATUS_COMPLETED, 'Completed'),
