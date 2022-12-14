@@ -50,6 +50,8 @@ class InventoryFilter(admin.SimpleListFilter):
 
 class ProductAdmin(admin.ModelAdmin):
     # * This class defines how we want to view/edit our Products Page
+    actions = ['clear_inventory']
+
     # this fields will be displayed on Product page
     list_display = ['id', 'title', 'unit_price',
                     'inventory_status', 'collection']
@@ -70,6 +72,17 @@ class ProductAdmin(admin.ModelAdmin):
             return 'Low'
         else:
             return 'OK'
+
+    # todo Defining a 'Custom Action':
+    @admin.action(description="Clear the inventory")
+    def clear_inventory(self, request, queryset):
+        updated_count = queryset.update(inventory=0)
+        print('updated_count', updated_count)
+
+        self.message_user(
+            request,
+            f"{updated_count} products were successfully updated!"
+        )
 
 
 class CustomerAdmin(admin.ModelAdmin):
