@@ -1,9 +1,10 @@
 from django.contrib import admin
+
+from . import models
+
 from django.db.models.aggregates import Count
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
-
-from . import models
 
 
 # * Register your models here.
@@ -24,7 +25,7 @@ class CollectionAdmin(admin.ModelAdmin):
         print('url =>', url)
         return format_html('<a href="{}"> {} </a>', url, collection.product_cnt)
 
-    # * Here, we r overriding the base Queryset
+    # *Here, we r overriding the base Queryset
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
             product_cnt=Count('product__collection_id')
@@ -53,6 +54,7 @@ class InventoryFilter(admin.SimpleListFilter):
 class ProductAdmin(admin.ModelAdmin):
     # * This class defines how we want to view/edit our Products Page
     actions = ['clear_inventory']
+    date_hierarchy = 'last_update'
 
     # this fields will be displayed on Product page
     list_display = ['id', 'title', 'unit_price',
@@ -71,7 +73,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='inventory')
     def inventory_status(self, product):
-        print('product:', product)
+        # print('product:', product)
         if product.inventory < 10:
             return 'Low'
         else:
@@ -95,6 +97,8 @@ class ProductAdmin(admin.ModelAdmin):
     }
 
     autocomplete_fields = ['collection']
+
+    # inlines = [TagInline]
 
 
 class CustomerAdmin(admin.ModelAdmin):

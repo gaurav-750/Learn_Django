@@ -11,21 +11,22 @@ from tags.models import TaggedItem
 
 from datetime import datetime
 # Create your views here.
-# * It take a req and returns a response
-# * Request Handler
+# *It take a req and returns a response
+# *Request Handler
 
 
 def sayHello(req):
 
     #! Retreive
-    # try:
-    #     query_set = Product.objects.all()
-    #     print('query_set:', type(query_set))
+    try:
+        queryset = Product.objects.all()
+        print('query_set:', type(queryset))
+        print(queryset)
 
     #     product1 = Product.objects.get(pk=1)
     #     print('Product 1:', product1)
-    # except ObjectDoesNotExist:
-    #     pass
+    except ObjectDoesNotExist:
+        pass
 
     #! Filter
     # prods = Product.objects.filter(unit_price__gt=20)
@@ -69,6 +70,8 @@ def sayHello(req):
 
     # queryset = Product.objects.filter(inventory=F('unit_price'))
 
+    # queryset = Product.objects.order_by('title').filter(inventory__lte=10)
+
     #! Sorting
     # queryset = Product.objects.order_by('title')
 
@@ -105,8 +108,8 @@ def sayHello(req):
     # print(list(queryset))
 
     #! Aggregation
-    # res = Product.objects.filter(collection__id=3).aggregate(
-    # count=Count('id'), min_price=Min('unit_price'))
+    # queryset = Product.objects.filter(collection__id=3).aggregate(
+    #     count=Count('id'), min_price=Min('unit_price'))
 
     # ? EXERCISE:
     # How many orders do we have?
@@ -117,8 +120,8 @@ def sayHello(req):
     #     product_id=1).aggregate(units_sold=Sum('quantity'))
 
     # How many orders had customer 1 placed?
-    # res = Order.objects.filter(customer_id=1).aggregate(
-    # customer1_totalOrders=Count('id'))
+    # queryset = Order.objects.filter(customer_id=1).aggregate(
+    #     customer1_totalOrders=Count('id'))
 
     # What is min, max and avg price of products in collection 3?
     # res = Product.objects.filter(collection_id=3).aggregate(
@@ -276,7 +279,7 @@ def sayHello(req):
         res = cursor.execute(
             "select * from store_collection limit 10")
         print('res=', res)
-        records = cursor.fetchone()
+        records = cursor.fetchall()
         print(records)
         print(records[0])
 

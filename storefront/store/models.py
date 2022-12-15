@@ -104,8 +104,6 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
 
-# We'll define 1-1 relationship between Customer and Address
-# Every customer will have 1 address
 class Address(models.Model):
     street = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
