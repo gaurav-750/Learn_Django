@@ -7,6 +7,7 @@ from rest_framework.renderers import JSONRenderer
 
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
+from django.db.models import Count
 
 # Create your views here.
 
@@ -60,9 +61,47 @@ def product_detail(req, id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view()
-def collection_detail(req, pk):
-    queryset = Collection.objects.get(pk=pk)
-    serializer = CollectionSerializer(queryset)
+@api_view(['GET', 'POST'])
+def collection_list(req):
+    if req.method == 'GET':
+        # add the field 'products_count' in the collections queryset
+        queryset = Collection.objects.annotate(
+            products_count=Count('product')
+        ).order_by('id')
 
-    return Response(serializer.data)
+        # serialize
+        serializer = CollectionSerializer(queryset, many=True)
+        return Response(serializer.data)
+    elif req.method == 'POST':
+        serializer = CollectionSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def collection_detail(req, pk):
+    # get the required collection
+    collection = Collection.objects.annotate(
+        products_count=Count('product')
+    ).get(pk=pk)
+
+    if req.method == 'GET':
+        serializer = CollectionSerializer(collection)
+        return Response(serializer.data)
+    elif req.method == 'PUT':
+        serializer = CollectionSerializer(collection, data=req.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    elif req.method == 'DELETE':
+        # *first we need to check if this collection has any products:
+        # collection.product_set.all()
+        if collection.product_set.all().count() > 0:
+            return Response({"error": "collection cannot be deleted because it is associated with products"},
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        collection.delete()
+        return Response({"message": "collection deleted successfully"},
+                        status=status.HTTP_204_NO_CONTENT)
