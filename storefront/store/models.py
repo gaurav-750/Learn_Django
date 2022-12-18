@@ -40,7 +40,8 @@ class Product(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
     # *1-many : 1 collection can contain many Products
-    collection = models.ForeignKey("Collection", on_delete=models.PROTECT)
+    collection = models.ForeignKey(
+        "Collection", on_delete=models.PROTECT)
 
     #! Many-Many rel:
     promotions = models.ManyToManyField(Promotion, blank=True)
