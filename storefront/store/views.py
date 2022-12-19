@@ -71,23 +71,14 @@ class ProductViewSet(ModelViewSet):
     #     return Response({'message': 'product deleted successfully'},
     #                     status=status.HTTP_204_NO_CONTENT)
 
-
-class CollectionList(ListCreateAPIView):
-
+# *Collections Viewset
+class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(
         products_count=Count('product')
     ).order_by('id')
     serializer_class = CollectionSerializer
 
-
-class CollectionDetail(RetrieveUpdateDestroyAPIView):
-    # Get and Put are handled here:
-    queryset = Collection.objects.annotate(
-        products_count=Count('product')
-    )
-    serializer_class = CollectionSerializer
-
-    def delete(self, req, pk):
+    def destroy(self, req, pk):
         collection = Collection.objects.get(pk=pk)
         # *first we need to check if this collection has any products:
         # collection.product_set.all()
@@ -98,6 +89,34 @@ class CollectionDetail(RetrieveUpdateDestroyAPIView):
         collection.delete()
         return Response({"message": "collection deleted successfully"},
                         status=status.HTTP_204_NO_CONTENT)
+
+
+# class CollectionList(ListCreateAPIView):
+
+#     queryset = Collection.objects.annotate(
+#         products_count=Count('product')
+#     ).order_by('id')
+#     serializer_class = CollectionSerializer
+
+
+# class CollectionDetail(RetrieveUpdateDestroyAPIView):
+#     # Get and Put are handled here:
+#     queryset = Collection.objects.annotate(
+#         products_count=Count('product')
+#     )
+#     serializer_class = CollectionSerializer
+
+#     def delete(self, req, pk):
+#         collection = Collection.objects.get(pk=pk)
+#         # *first we need to check if this collection has any products:
+#         # collection.product_set.all()
+#         if collection.product_set.all().count() > 0:
+#             return Response({"error": "collection cannot be deleted because it is associated with products"},
+#                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+#         collection.delete()
+#         return Response({"message": "collection deleted successfully"},
+#                         status=status.HTTP_204_NO_CONTENT)
 
 
 # @api_view(['GET', 'POST'])
