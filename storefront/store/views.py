@@ -6,20 +6,48 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
 from .models import Product, Collection
 from .serializers import ProductSerializer, CollectionSerializer
 from django.db.models import Count
 
 # Create your views here.
 
-# *Class Based Views:
+# *Creating a ViewSet for Products
+
+
+class ProductViewSet(ModelViewSet):
+    # *List, Post, Retreive, Update are handled here
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+    # *We r overriding destroy method => as to give our own implementation
+    # if we don't override, ModelViewSet will handle Delete as well
+    def destroy(self, req, pk):
+        product = get_object_or_404(Product, pk=pk)
+
+        # check if product has any orderitem
+        # product.orderitem.all() -> List of all orderitems
+        if product.orderitem_set.all().count() > 0:
+            return Response({'error': 'Cannot delete product as it is associated with some order items'})
+        product.delete()
+        return Response({'message': 'product deleted successfully'},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 #! This is using Generic Views
-class ProductList(ListCreateAPIView):
+# class ProductList(ListCreateAPIView):
 
-    queryset = Product.objects.select_related('collection').all()
-    serializer_class = ProductSerializer
+    # queryset = Product.objects.all()
+    # serializer_class = ProductSerializer
+
+    # def get_serializer_context(self):
+    # return {'request': self.request}
+
     # (OR)
     # def get_queryset(self):
     #     return Product.objects.select_related('collection').all()
@@ -27,60 +55,21 @@ class ProductList(ListCreateAPIView):
     # def get_serializer_class(self):
     #     return ProductSerializer
 
-    def get_serializer_context(self):
-        return {'request': self.request}
+# class ProductDetail(RetrieveUpdateDestroyAPIView):
+    # Get and Put are handled here
+    # queryset = Product.objects.all()
+    # serializer_class = ProductSerializer
 
+    # def delete(self, req, pk):
+    #     product = get_object_or_404(Product, pk=pk)
 
-# class ProductList(APIView):
-#     def get(self, req):
-#         queryset = Product.objects.select_related('collection').all()
-#         serializer = ProductSerializer(
-#             queryset, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, req):
-#         # This is where DeSerialization happens:
-#         serializer = ProductSerializer(data=req.data)
-
-#         # Data Validation -> If data is inappropriate, raise exception
-#         serializer.is_valid(raise_exception=True)
-#         # save to database:
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class ProductDetail(RetrieveUpdateDestroyAPIView):
-
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-    # *Here we have some logic, hence we 'override' the delete method:
-    def delete(self, req, pk):
-        product = get_object_or_404(Product, pk=pk)
-
-        # print(product.orderitem_set.all())
-        # *check if there are any orderitems associated with this product:
-        if product.orderitem_set.count() > 0:
-            return Response({'error': "Product cannot be deleted because it is associated with an order item."},
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # def get(self, req, id):
-    #     product = get_object_or_404(Product, pk=id)
-    #     # this serializer will convert our product object to a dictionary
-    #     # and we get that through serializer.data
-    #     serializer = ProductSerializer(product)
-    #     return Response(serializer.data)
-
-    # def put(self, req, id):
-    #     product = get_object_or_404(Product, pk=id)
-
-    #     # deserialize -> validate -> save
-    #     serializer = ProductSerializer(product, data=req.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response(serializer.data)
+    #     # check if product has any orderitem
+    #     # product.orderitem.all() -> List of all orderitems
+    #     if product.orderitem_set.all().count() > 0:
+    #         return Response({'error': 'Cannot delete product as it is associated with some order items'})
+    #     product.delete()
+    #     return Response({'message': 'product deleted successfully'},
+    #                     status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionList(ListCreateAPIView):
