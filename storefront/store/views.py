@@ -8,8 +8,11 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import Product, Collection, Review
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
+from .filters import ProductFilter
 from django.db.models import Count
 
 # Create your views here.
@@ -18,15 +21,21 @@ from django.db.models import Count
 
 
 class ProductViewSet(ModelViewSet):
-    # *List, Post, Retreive, Update are handled here
+    # *Filtering
+    filter_backends = [DjangoFilterBackend]
+    # filterset_fields = ['collection_id']
 
+    # We can also Custom filter class:
+    filterset_class = ProductFilter
+
+    # *List, Post, Retreive, Update are handled here
     # queryset = Product.objects.all()
     def get_queryset(self):
         queryset = Product.objects.all()
-        collection_id = self.request.query_params.get('collection_id')
+        # collection_id = self.request.query_params.get('collection_id')
 
-        if collection_id is not None:
-            queryset = queryset.filter(collection_id=collection_id)
+        # if collection_id is not None:
+        #     queryset = queryset.filter(collection_id=collection_id)
         return queryset
 
     serializer_class = ProductSerializer
