@@ -19,7 +19,16 @@ from django.db.models import Count
 
 class ProductViewSet(ModelViewSet):
     # *List, Post, Retreive, Update are handled here
-    queryset = Product.objects.all()
+
+    # queryset = Product.objects.all()
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        collection_id = self.request.query_params.get('collection_id')
+
+        if collection_id is not None:
+            queryset = queryset.filter(collection_id=collection_id)
+        return queryset
+
     serializer_class = ProductSerializer
 
     def get_serializer_context(self):
@@ -160,10 +169,10 @@ class CollectionViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     # queryset = Review.objects.all()
     def get_queryset(self):
+        # print('self.kwargs => ', self.kwargs)
         return Review.objects.filter(product_id=self.kwargs['product_pk'])
 
     serializer_class = ReviewSerializer
 
     def get_serializer_context(self):
-        # print('self.kwargs => ', self.kwargs)
         return {'product_id': self.kwargs['product_pk']}
