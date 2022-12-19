@@ -8,8 +8,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .models import Product, Collection
-from .serializers import ProductSerializer, CollectionSerializer
+from .models import Product, Collection, Review
+from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
 from django.db.models import Count
 
 # Create your views here.
@@ -154,3 +154,9 @@ class CollectionViewSet(ModelViewSet):
 #     elif req.method == 'PUT':
 
 #     elif req.method == 'DELETE':
+
+
+# *Reviews:
+class ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer

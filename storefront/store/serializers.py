@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Collection
+from .models import Product, Collection, Review
 from django.db.models import Count
 from django.db import connection
 from decimal import Decimal
@@ -37,3 +37,9 @@ class ProductSerializer(serializers.ModelSerializer):
     # )
 
     # collection = CollectionSerializer(read_only=True)
+
+
+class ReviewSerializer(serializers.Serializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'name', 'product', 'description', 'date']
