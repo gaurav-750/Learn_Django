@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, \
     CreateAPIView
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -202,6 +202,6 @@ class ReviewViewSet(ModelViewSet):
 
 
 # todo 'Cart'
-class CartViewSet(CreateModelMixin, GenericViewSet):  # Post
-    queryset = Cart.objects.all()
+class CartViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):  # Post
+    queryset = Cart.objects.prefetch_related('cartitems').all()
     serializer_class = CartSerializer
