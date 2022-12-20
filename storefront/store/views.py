@@ -9,7 +9,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Product, Collection, Review
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
@@ -23,7 +23,7 @@ from django.db.models import Count
 
 class ProductViewSet(ModelViewSet):
     # *Filtering
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     # filterset_fields = ['collection_id']
 
     # We can also Custom filter class:
@@ -31,6 +31,9 @@ class ProductViewSet(ModelViewSet):
 
     # searching:
     search_fields = ['title', 'description']
+
+    # sort:
+    ordering_fields = ['unit_price', 'last_update']
 
     # *List, Post, Retreive, Update are handled here
     # queryset = Product.objects.all()
