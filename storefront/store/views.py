@@ -15,7 +15,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Product, Collection, Review, Cart, CartItem
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, \
-    CartSerializer
+    CartSerializer, CartItemSerializer
 from .filters import ProductFilter
 from .pagination import CustomPagination
 
@@ -209,3 +209,11 @@ class CartViewSet(CreateModelMixin,
 
     queryset = Cart.objects.prefetch_related('cartitems').all()
     serializer_class = CartSerializer
+
+
+class CartItemViewSet(ModelViewSet):
+    def get_queryset(self):
+        # {'cart_pk': 'd3b07bdcf1de41419148b5f7b41e10b2'}
+        return CartItem.objects.select_related('product').filter(cart_id=self.kwargs['cart_pk'])
+
+    serializer_class = CartItemSerializer
