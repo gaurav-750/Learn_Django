@@ -8,6 +8,7 @@ router = routers.DefaultRouter()
 # *register our viewsets with router
 router.register('products', viewset=views.ProductViewSet, basename='products')
 router.register('collections', viewset=views.CollectionViewSet)
+router.register('carts', viewset=views.CartViewSet)
 
 # Child routers:
 products_router = routers.NestedDefaultRouter(
@@ -20,6 +21,7 @@ urlpatterns = [
     # *routers
     path("", include(router.urls)),
     path("", include(products_router.urls)),
+    # path('carts/', views.CreateCart.as_view())
 
     # *products:
     # path('products/', views.ProductList.as_view()),

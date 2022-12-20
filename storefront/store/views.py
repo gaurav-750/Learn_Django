@@ -6,13 +6,16 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, \
+    CreateAPIView
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Product, Collection, Review
-from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
+from .models import Product, Collection, Review, Cart, CartItem
+from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer, \
+    CartSerializer
 from .filters import ProductFilter
 from .pagination import CustomPagination
 
@@ -185,7 +188,7 @@ class CollectionViewSet(ModelViewSet):
 #     elif req.method == 'DELETE':
 
 
-# *Reviews:
+# todo 'Reviews':
 class ReviewViewSet(ModelViewSet):
     # queryset = Review.objects.all()
     def get_queryset(self):
@@ -196,3 +199,9 @@ class ReviewViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {'product_id': self.kwargs['product_pk']}
+
+
+# todo 'Cart'
+class CartViewSet(CreateModelMixin, GenericViewSet):  # Post
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
