@@ -1,20 +1,20 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from django.db.models import Count
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Product, Collection, Review
 from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
 from .filters import ProductFilter
-from django.db.models import Count
+from .pagination import CustomPagination
 
 # Create your views here.
 
@@ -34,6 +34,10 @@ class ProductViewSet(ModelViewSet):
 
     # sort:
     ordering_fields = ['unit_price', 'last_update']
+
+    # *Pagination -> We can also set it globally in SETTINGS -> REST_FRAMEWORK
+    # pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
 
     # *List, Post, Retreive, Update are handled here
     # queryset = Product.objects.all()
