@@ -9,6 +9,7 @@ router = routers.DefaultRouter()
 router.register('products', viewset=views.ProductViewSet, basename='products')
 router.register('collections', viewset=views.CollectionViewSet)
 router.register('carts', viewset=views.CartViewSet)
+router.register('customers', viewset=views.CustomerViewSet)
 
 # Child routers:
 # products/1/reviews/1
