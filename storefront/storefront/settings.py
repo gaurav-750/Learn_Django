@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'playground',
     'store',
-    'store_custom',
     'tags',
     'likes',
     'debug_toolbar',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +142,7 @@ INTERNAL_IPS = [
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False,
 }
+
+
+# For User:
+AUTH_USER_MODEL = 'core.User'
