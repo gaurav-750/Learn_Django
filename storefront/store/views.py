@@ -24,6 +24,8 @@ from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializ
 from .filters import ProductFilter
 from .pagination import CustomPagination
 
+from .permissions import IsAdminOrReadOnly
+
 # Create your views here.
 
 # *Creating a ViewSet for Products
@@ -46,6 +48,9 @@ class ProductViewSet(ModelViewSet):
     # *Pagination -> We can also set it globally in SETTINGS -> REST_FRAMEWORK
     # pagination_class = PageNumberPagination
     pagination_class = CustomPagination
+
+    # !set the custom permission class
+    permission_classes = [IsAdminOrReadOnly]
 
     # *List, Post, Retreive, Update are handled here
     # queryset = Product.objects.all()
@@ -114,6 +119,8 @@ class CollectionViewSet(ModelViewSet):
         products_count=Count('product')
     ).order_by('id')
     serializer_class = CollectionSerializer
+
+    permission_classes = [IsAdminOrReadOnly]
 
     def destroy(self, req, pk):
         collection = Collection.objects.get(pk=pk)
@@ -238,26 +245,25 @@ class CartItemViewSet(ModelViewSet):
         return {'cart_id': self.kwargs['cart_pk']}
 
 
-class CustomerViewSet(CreateModelMixin,
-                      RetrieveModelMixin,
-                      UpdateModelMixin,
-                      GenericViewSet):
+class CustomerViewSet(ModelViewSet):
     # POST
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
     # *Setting the permission:
-    # all actions in this viewset are closed to anonymous users, i.e unauthenticated users. But we can override it
-    # permission_classes = [IsAuthenticated]
+    # todo Will only allow permission if user is 'Admin'
+    permission_classes = [IsAdminUser]
 
     # if we want to have diff.permissions for diff.actions =>
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        else:
-            return [IsAuthenticated()]
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         return [AllowAny()]
+    #     else:
+    #         return [IsAuthenticated()]
 
-    @action(detail=False, methods=['GET', 'PUT'])  # /customers/me
+    # /customers/me
+    @action(detail=False, methods=['GET', 'PUT'],
+            permission_classes=[IsAuthenticated])
     def me(self, request):
         # todo retrieve the customer and return it
         # request.user -> of not logged in => AnonymousUser
