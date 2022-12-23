@@ -12,6 +12,8 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, DestroyM
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, AllowAny, \
+    IsAuthenticatedOrReadOnly, IsAdminUser
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -243,6 +245,17 @@ class CustomerViewSet(CreateModelMixin,
     # POST
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    # *Setting the permission:
+    # all actions in this viewset are closed to anonymous users, i.e unauthenticated users. But we can override it
+    # permission_classes = [IsAuthenticated]
+
+    # if we want to have diff.permissions for diff.actions =>
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        else:
+            return [IsAuthenticated()]
 
     @action(detail=False, methods=['GET', 'PUT'])  # /customers/me
     def me(self, request):
